@@ -66,7 +66,15 @@ app.delete('/api/trades/:id', (req, res) => {
     db.run('DELETE FROM trades WHERE id = ?', [req.params.id], (err) => {
         if (err) return res.status(400).json({ error: err.message });
         res.json({ success: true });
+    });// Delete account
+app.delete('/api/accounts/:id', (req, res) => {
+    db.run('DELETE FROM accounts WHERE id = ?', [req.params.id], (err) => {
+        if (err) return res.status(400).json({ error: err.message });
+        db.run('DELETE FROM trades WHERE account_id = ?', [req.params.id], (err2) => {
+            res.json({ success: true });
+        });
     });
+});
 });
 
 const PORT = process.env.PORT || 3000;
