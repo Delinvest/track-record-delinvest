@@ -1,4 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Art du Trading</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); color: #fff; min-height: 100vh; padding: 24px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .auth-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-box { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 40px; text-align: center; max-width: 400px; }
+        .auth-box h1 { font-size: 28px; margin-bottom: 8px; background: linear-gradient(90deg, #60a5fa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-box p { color: #94a3b8; margin-bottom: 24px; }
+        .auth-box input { width: 100%; padding: 12px; margin-bottom: 16px; background: #475569; border: 1px solid #334155; color: white; border-radius: 6px; }
+        .auth-box button { width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 8px; }
+        .auth-box button:hover { background: #15803d; }
+        h1 { font-size: 36px; font-weight: bold; margin-bottom: 4px; background: linear-gradient(90deg, #60a5fa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
+        .header { border-bottom: 1px solid #334155; padding-bottom: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        button { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-red { background: #dc2626; color: white; }
+        .btn-green { background: #16a34a; color: white; }
+        .btn-purple { background: #9333ea; color: white; }
+        .account-selector { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .account-button { padding: 8px 12px; border: 2px solid #475569; border-radius: 6px; background: transparent; color: #cbd5e1; cursor: pointer; font-weight: 600; }
+        .account-button.active { border-color: #06b6d4; background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .tab { padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; background: #475569; color: #cbd5e1; border: none; }
+        .tab.active { background: linear-gradient(90deg, #3b82f6, #06b6d4); color: #0f172a; }
+        .content { display: none; }
+        .content.active { display: block; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 16px; }
+        .kpi-label { color: #94a3b8; font-size: 11px; margin-bottom: 8px; text-transform: uppercase; }
+        .kpi-value { font-size: 20px; font-weight: bold; }
+        .green { color: #4ade80; }
+        .blue { color: #60a5fa; }
+        .cyan { color: #06b6d4; }
+        .red { color: #f87171; }
+        .form-input { background: #475569; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin-bottom: 12px; width: 100%; }
+        .hidden { display: none !important; }
+        table { width: 100%; border-collapse: collapse; background: #334155; border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+        thead { background: #1e293b; }
+        th, td { padding: 12px 16px; text-align: left; font-size: 13px; }
+        td { border-bottom: 1px solid #475569; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .badge-long { background: #166534; color: #86efac; }
+        .badge-short { background: #7c2d12; color: #fed7aa; }
+        .section { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+        .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .chart-container { position: relative; height: 400px; margin-bottom: 30px; }
+        .trade-card { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+        .trade-image { max-width: 100%; max-height: 300px; border-radius: 6px; margin-top: 12px; cursor: pointer; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { position: relative; max-width: 90%; }
+        .modal-content img { max-width: 100%; max-height: 90vh; }
+        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+        .stat-box { background: #475569; padding: 12px; border-radius: 6px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+        .stat-label { color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div id="authScreen" class="auth-container">
+        <div class="auth-box">
+            <h1>L'Art du Trading</h1>
+            <p id="authTitle">Connexion</p>
+            <input type="text" id="username" placeholder="Identifiant">
+            <input type="password" id="password" placeholder="Mot de passe">
+            <button onclick="handleAuth()">Valider</button>
+            <div style="color: #94a3b8; font-size: 14px; margin-top: 12px;">
+                Pas de compte ? <a onclick="toggleAuthMode()" style="color: #60a5fa; cursor: pointer;">S'inscrire</a>
+            </div>
+        </div>
+    </div>
 
+    <div id="appScreen" class="container hidden">
+        <div class="header">
+            <div>
+                <h1>L'Art du Trading</h1>
+                <p class="subtitle">Delinvest - Track Record</p>
+            </div>
+            <button class="btn-red" onclick="logout()">Déconnexion</button>
+        </div>
+
+        <div class="account-selector">
+            <span style="color: #94a3b8;">Compte:</span>
+            <div id="accountButtons"></div>
+            <button class="btn-purple" onclick="toggleAccountCreator()">➕ Nouveau Compte</button>
+        </div>
+
+        <div id="accountCreator" class="section hidden">
+            <h3 style="margin-bottom: 16px;">Créer un nouveau compte</h3>
+            <input type="text" id="newAccountName" placeholder="Nom du compte" class="form-input">
+            <input type="number" id="newAccountCapital" placeholder="Capital initial" class="form-input" value="10000">
+            <button class="btn-green" onclick="createAccount()" style="margin-right: 8px;">Créer</button>
+            <button class="btn-purple" onclick="toggleAccountCreator()">Annuler</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(0)">📊 Dashboard</button>
+            <button class="tab" onclick="switchTab(1)">📝 Journal</button>
+            <button class="tab" onclick="switchTab(2)">📊 Statistiques</button>
+            <button class="tab" onclick="switchTab(3)">💬 Trades</button>
+            <button class="tab" onclick="switchTab(4)">📋 Détails</button>
+        </div>
+
+        <div class="content active">
+            <div class="kpi-grid">
+                <div class="kpi-card"><div class="kpi-label">Performance</div><div class="kpi-value green" id="perf">0%</div></div>
+                <div class="kpi-card"><div class="kpi-label">Capital</div><div class="kpi-value blue" id="capital">$0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Winrate</div><div class="kpi-value cyan" id="winrate">0%</div></div>
+                <div class="kpi-card"><div class="kpi-label">Profit Factor</div><div class="kpi-value" style="color: #a78bfa;" id="pf">0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Max DD</div><div class="kpi-value red" id="maxdd">0%</div></div>
+                <div class="kpi-card"><div class="kpi-label">Avg Gain</div><div class="kpi-value green" id="avggain">$0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-value" style="color: #fbbf24;" id="sharpe">0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Expectancy</div><div class="kpi-value" style="color: #34d399;" id="expectancy">$0</div></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <button class="btn-green" style="margin-bottom: 16px;" onclick="toggleForm()">+ Ajouter Trade</button>
+            <div id="form" class="section hidden">
+                <h3 style="margin-bottom: 16px;">Nouveau Trade</h3>
+                <input type="date" id="date" class="form-input">
+                <select id="asset" class="form-input">
+                    <option>NAS100</option><option>DAX40</option><option>GOLD</option><option>DJ30</option><option>EURUSD</option><option>SP500</option>
+                </select>
+                <select id="direction" class="form-input"><option>Long</option><option>Short</option></select>
+                <input type="number" id="entry" placeholder="Entrée" class="form-input" step="0.01">
+                <input type="number" id="sl" placeholder="SL" class="form-input" step="0.01">
+                <input type="number" id="tp" placeholder="TP" class="form-input" step="0.01">
+                <input type="number" id="result" placeholder="Résultat $" class="form-input" step="0.01">
+                <textarea id="comment" placeholder="Commentaire..." class="form-input" style="height: 60px;"></textarea>
+                <label style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 8px;">Screenshot (optionnel)</label>
+                <input type="file" id="screenshot" accept="image/*" class="form-input" onchange="previewScreenshot()">
+                <img id="screenshotPreview" style="max-width: 200px; max-height: 150px; margin-top: 8px; border-radius: 6px; display:none;">
+                <button class="btn-green" onclick="addTrade()" style="margin-right: 8px;">Ajouter</button>
+                <button class="btn-purple" onclick="toggleForm()">Annuler</button>
+            </div>
+            <table><thead><tr><th>Date</th><th>Actif</th><th>Dir</th><th>Entrée</th><th>Résultat</th><th>Action</th></tr></thead><tbody id="tradesBody"></tbody></table>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Equity Curve</div>
+                <div class="chart-container"><canvas id="equityChart"></canvas></div>
+            </div>
+            <div class="section">
+                <div class="section-title">P&L par Trade</div>
+                <div class="chart-container"><canvas id="balanceChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="content" id="tradesDetails"></div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Statistiques Avancées</div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-row"><span class="stat-label">Avg Gain</span><span class="green" id="detail-avggain">$0</span></div>
+                        <div class="stat-row"><span class="stat-label">Avg Loss</span><span class="red" id="detail-avgloss">$0</span></div>
+                        <div class="stat-row"><span class="stat-label">Ratio</span><span class="blue" id="detail-ratio">0</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-row"><span class="stat-label">Total</span><span class="cyan" id="detail-total">0</span></div>
+                        <div class="stat-row"><span class="stat-label">Wins</span><span class="green" id="detail-wins">0</span></div>
+                        <div class="stat-row"><span class="stat-label">Losses</span><span class="red" id="detail-losses">0</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-row"><span class="stat-label">Levier</span><span class="blue" id="detail-leverage">1x</span></div>
+                        <div class="stat-row"><span class="stat-label">R:R Moy</span><span class="blue" id="detail-rr">0</span></div>
+                        <div class="stat-row"><span class="stat-label">Volatilité</span><span style="color: #fbbf24;" id="detail-vol">$0</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-title">Performance par Actif</div>
+                <div class="stats-grid" id="assetStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="">
+        </div>
+    </div>
+
+    <script>
+        let authMode = 'login';
+        let userId = null;
+        let currentAccount = null;
+        let accounts = [];
+        let trades = [];
+        let currentScreenshot = null;
+        let equityChart = null;
+        let balanceChart = null;
+
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'register' : 'login';
+            document.getElementById('authTitle').textContent = authMode === 'login' ? 'Connexion' : 'Inscription';
+        }
+
+        async function handleAuth() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (!username || !password) return alert('Remplissez les champs');
+
+            try {
+                const endpoint = authMode === 'register' ? '/api/register' : '/api/login';
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (!res.ok) return alert(data.error);
+                
+                if (authMode === 'register') {
+                    alert('Compte créé ! Connectez-vous');
+                    toggleAuthMode();
+                } else {
+                    userId = data.user_id;
+                    showApp();
+                    loadAccounts();
+                }
+            } catch (e) {
+                alert('Erreur: ' + e.message);
+            }
+        }
+
+        async function loadAccounts() {
+            try {
+                const res = await fetch(`/api/accounts/${userId}`);
+                accounts = await res.json();
+                updateAccountButtons();
+                if (accounts.length > 0) switchAccount(accounts[0].id);
+                else createDefaultAccount();
+            } catch (e) { console.error(e); }
+        }
+
+        async function createDefaultAccount() {
+            try {
+                const res = await fetch(`/api/accounts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, name: 'Principal', capital: 10000 })
+                });
+                const acc = await res.json();
+                accounts.push(acc);
+                updateAccountButtons();
+                switchAccount(acc.id);
+            } catch (e) { console.error(e); }
+        }
+
+        function updateAccountButtons() {
+            const container = document.getElementById('accountButtons');
+            container.innerHTML = '';
+            accounts.forEach(acc => {
+                const btn = document.createElement('button');
+                btn.className = 'account-button' + (acc.id === currentAccount ? ' active' : '');
+                btn.textContent = acc.name + ' ($' + acc.capital + ')';
+                btn.onclick = () => switchAccount(acc.id);
+                container.appendChild(btn);
+            });
+        }
+
+        async function switchAccount(id) {
+            currentAccount = id;
+            updateAccountButtons();
+            await loadTrades();
+            updateUI();
+        }
+
+        async function loadTrades() {
+            try {
+                const res = await fetch(`/api/trades/${currentAccount}`);
+                trades = await res.json();
+            } catch (e) { console.error(e); }
+        }
+
+        function previewScreenshot() {
+            const file = document.getElementById('screenshot').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    currentScreenshot = e.target.result;
+                    document.getElementById('screenshotPreview').src = currentScreenshot;
+                    document.getElementById('screenshotPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function addTrade() {
+            const entry = parseFloat(document.getElementById('entry').value);
+            const sl = parseFloat(document.getElementById('sl').value);
+            const tp = parseFloat(document.getElementById('tp').value);
+            const result = parseFloat(document.getElementById('result').value);
+            if (!entry || !sl || !tp || isNaN(result)) return alert('Remplissez tous les champs');
+
+            try {
+                await fetch(`/api/trades`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        account_id: currentAccount,
+                        date: document.getElementById('date').value,
+                        asset: document.getElementById('asset').value,
+                        direction: document.getElementById('direction').value,
+                        entry: entry.toFixed(2),
+                        sl: sl.toFixed(2),
+                        tp: tp.toFixed(2),
+                        resultUSD: result.toFixed(2),
+                        comment: document.getElementById('comment').value,
+                        screenshot: currentScreenshot
+                    })
+                });
+                document.getElementById('entry').value = '';
+                document.getElementById('sl').value = '';
+                document.getElementById('tp').value = '';
+                document.getElementById('result').value = '';
+                document.getElementById('comment').value = '';
+                document.getElementById('screenshot').value = '';
+                document.getElementById('screenshotPreview').style.display = 'none';
+                currentScreenshot = null;
+                toggleForm();
+                await loadTrades();
+                updateUI();
+            } catch (e) { alert('Erreur: ' + e.message); }
+        }
+
+        async function deleteTrade(id) {
+            if (!confirm('Supprimer ?')) return;
+            try {
+                await fetch(`/api/trades/${id}`, { method: 'DELETE' });
+                await loadTrades();
+                updateUI();
+            } catch (e) { alert('Erreur: ' + e.message); }
+        }
+
+        function toggleAccountCreator() {
+            document.getElementById('accountCreator').classList.toggle('hidden');
+        }
+
+        async function createAccount() {
+            const name = document.getElementById('newAccountName').value;
+            const capital = parseFloat(document.getElementById('newAccountCapital').value);
+            if (!name || !capital) return alert('Remplissez les champs');
+
+            try {
+                const res = await fetch(`/api/accounts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, name, capital })
+                });
+                const acc = await res.json();
+                accounts.push(acc);
+                document.getElementById('newAccountName').value = '';
+                document.getElementById('newAccountCapital').value = '10000';
+                updateAccountButtons();
+                switchAccount(acc.id);
+                toggleAccountCreator();
+            } catch (e) {
+                alert('Erreur: ' + e.message);
+            }
+        }
+            document.getElementById('form').classList.toggle('hidden');
+            if (!document.getElementById('form').classList.contains('hidden')) {
+                document.getElementById('date').valueAsDate = new Date();
+            }
+        }
+
+        function switchTab(idx) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.content')[idx].classList.add('active');
+            document.querySelectorAll('.tab')[idx].classList.add('active');
+        }
+
+        function openModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+
+        function showApp() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+        }
+
+        function logout() {
+            if (confirm('Déconnexion ?')) {
+                userId = null;
+                currentAccount = null;
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        function updateUI() {
+            const body = document.getElementById('tradesBody');
+            body.innerHTML = '';
+            
+            trades.forEach(trade => {
+                const row = document.createElement('tr');
+                const isWin = trade.resultUSD > 0;
+                row.innerHTML = `
+                    <td>${trade.date}</td>
+                    <td>${trade.asset}</td>
+                    <td><span class="badge ${trade.direction === 'Long' ? 'badge-long' : 'badge-short'}">${trade.direction}</span></td>
+                    <td>${parseFloat(trade.entry).toFixed(2)}</td>
+                    <td><span class="badge ${isWin ? 'badge-long' : 'badge-short'}">${trade.resultUSD > 0 ? '+' : ''}$${parseFloat(trade.resultUSD).toFixed(2)}</span></td>
+                    <td><button class="btn-red" style="padding: 4px 8px; font-size: 12px;" onclick="deleteTrade(${trade.id})">×</button></td>
+                `;
+                body.appendChild(row);
+            });
+
+            const wins = trades.filter(t => t.resultUSD > 0);
+            const losses = trades.filter(t => t.resultUSD < 0);
+            const totalGain = wins.reduce((sum, t) => sum + parseFloat(t.resultUSD), 0);
+            const totalLoss = Math.abs(losses.reduce((sum, t) => sum + parseFloat(t.resultUSD), 0));
+            const avgGain = wins.length > 0 ? totalGain / wins.length : 0;
+            const avgLoss = losses.length > 0 ? totalLoss / losses.length : 0;
+            const winrate = trades.length > 0 ? (wins.length / trades.length * 100).toFixed(2) : 0;
+            const totalPnL = trades.reduce((sum, t) => sum + parseFloat(t.resultUSD), 0);
+            const profitFactor = totalLoss > 0 ? (totalGain / totalLoss).toFixed(2) : (totalGain > 0 ? 999 : 0);
+
+            const returns = trades.map(t => parseFloat(t.resultUSD));
+            const meanReturn = returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0;
+            const variance = returns.length > 0 ? returns.reduce((sum, r) => sum + Math.pow(r - meanReturn, 2), 0) / returns.length : 0;
+            const stdDev = Math.sqrt(variance);
+            const sharpe = stdDev > 0 ? (meanReturn / stdDev * Math.sqrt(252)).toFixed(2) : 0;
+            const expectancy = trades.length > 0 ? (totalPnL / trades.length).toFixed(2) : 0;
+
+            let maxDD = 0;
+            let runningMax = 0;
+            let cumPnL = 0;
+            trades.forEach(trade => {
+                cumPnL += parseFloat(trade.resultUSD);
+                if (cumPnL > runningMax) runningMax = cumPnL;
+                const dd = runningMax - cumPnL;
+                if (dd > maxDD) maxDD = dd;
+            });
+
+            const account = accounts.find(a => a.id === currentAccount);
+            const currentCapital = (account ? account.capital : 0) + totalPnL;
+
+            document.getElementById('perf').textContent = ((totalPnL / (account?.capital || 10000) * 100).toFixed(2)) + '%';
+            document.getElementById('capital').textContent = '$' + currentCapital.toFixed(2);
+            document.getElementById('winrate').textContent = winrate + '%';
+            document.getElementById('pf').textContent = profitFactor;
+            document.getElementById('maxdd').textContent = maxDD.toFixed(2) + '$';
+            document.getElementById('avggain').textContent = '$' + avgGain.toFixed(2);
+            document.getElementById('sharpe').textContent = sharpe;
+            document.getElementById('expectancy').textContent = '$' + expectancy;
+
+            document.getElementById('detail-avggain').textContent = '$' + avgGain.toFixed(2);
+            document.getElementById('detail-avgloss').textContent = '$' + avgLoss.toFixed(2);
+            document.getElementById('detail-ratio').textContent = (avgLoss > 0 ? (avgGain / avgLoss).toFixed(2) : 0);
+            document.getElementById('detail-total').textContent = trades.length;
+            document.getElementById('detail-wins').textContent = wins.length;
+            document.getElementById('detail-losses').textContent = losses.length;
+            document.getElementById('detail-vol').textContent = '$' + stdDev.toFixed(2);
+
+            const tradesDetailsDiv = document.getElementById('tradesDetails');
+            tradesDetailsDiv.innerHTML = '';
+            trades.forEach(trade => {
+                const card = document.createElement('div');
+                card.className = 'trade-card';
+                const isWin = parseFloat(trade.resultUSD) > 0;
+                const rr = ((parseFloat(trade.tp) - parseFloat(trade.entry)) / (parseFloat(trade.entry) - parseFloat(trade.sl))).toFixed(2);
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div><strong>${trade.asset}</strong> - ${trade.date}</div>
+                        <span class="badge ${trade.direction === 'Long' ? 'badge-long' : 'badge-short'}">${trade.direction}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; font-size: 13px;">
+                        <div><span style="color: #94a3b8;">Entry:</span> ${parseFloat(trade.entry).toFixed(2)}</div>
+                        <div><span style="color: #94a3b8;">SL:</span> ${parseFloat(trade.sl).toFixed(2)}</div>
+                        <div><span style="color: #94a3b8;">TP:</span> ${parseFloat(trade.tp).toFixed(2)}</div>
+                        <div><span style="color: #94a3b8;">R:R:</span> ${rr}</div>
+                    </div>
+                    <div style="padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-top: 8px;" class="${isWin ? 'badge-long' : 'badge-short'}">
+                        ${isWin ? '+' : ''}$${parseFloat(trade.resultUSD).toFixed(2)}
+                    </div>
+                    ${trade.comment ? `<div style="color: #cbd5e1; margin-top: 8px; font-size: 13px;">${trade.comment}</div>` : ''}
+                    ${trade.screenshot ? `<img src="${trade.screenshot}" class="trade-image" onclick="openModal('${trade.screenshot}')">` : ''}
+                `;
+                tradesDetailsDiv.appendChild(card);
+            });
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            let cumPnL = 0;
+            const equityData = trades.map(trade => {
+                cumPnL += parseFloat(trade.resultUSD);
+                return cumPnL;
+            });
+            
+            const account = accounts.find(a => a.id === currentAccount);
+            const initialCapital = account?.capital || 10000;
+            const equityValues = equityData.map(pnl => initialCapital + pnl);
+            
+            const equityCtx = document.getElementById('equityChart')?.getContext('2d');
+            if (equityCtx) {
+                if (equityChart) equityChart.destroy();
+                equityChart = new Chart(equityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: trades.map((_, i) => i + 1),
+                        datasets: [{
+                            label: 'Equity',
+                            data: equityValues,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: false, grid: { color: '#475569' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+
+            const balanceCtx = document.getElementById('balanceChart')?.getContext('2d');
+            if (balanceCtx) {
+                if (balanceChart) balanceChart.destroy();
+                const colors = trades.map(t => parseFloat(t.resultUSD) > 0 ? '#4ade80' : '#f87171');
+                balanceChart = new Chart(balanceCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: trades.map((_, i) => i + 1),
+                        datasets: [{
+                            label: 'P&L',
+                            data: trades.map(t => parseFloat(t.resultUSD)),
+                            backgroundColor: colors,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } },
+                            x: { grid: { color: '#475569' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
