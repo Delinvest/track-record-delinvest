@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -35,10 +34,10 @@
         .tab.active { background: linear-gradient(90deg, #3b82f6, #06b6d4); color: #0f172a; }
         .content { display: none; }
         .content.active { display: block; }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .kpi-card { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 20px; }
-        .kpi-label { color: #94a3b8; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; }
-        .kpi-value { font-size: 28px; font-weight: bold; margin-bottom: 4px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 16px; }
+        .kpi-label { color: #94a3b8; font-size: 11px; margin-bottom: 8px; text-transform: uppercase; }
+        .kpi-value { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
         .green { color: #4ade80; }
         .blue { color: #60a5fa; }
         .cyan { color: #06b6d4; }
@@ -121,6 +120,7 @@
             <button class="tab" onclick="switchTab(1)">📝 Journal</button>
             <button class="tab" onclick="switchTab(2)">📊 Statistiques</button>
             <button class="tab" onclick="switchTab(3)">💬 Trades</button>
+            <button class="tab" onclick="switchTab(4)">📋 Détails</button>
         </div>
 
         <!-- Dashboard -->
@@ -132,6 +132,8 @@
                 <div class="kpi-card"><div class="kpi-label">Profit Factor</div><div class="kpi-value" style="color: #a78bfa;" id="pf">0</div></div>
                 <div class="kpi-card"><div class="kpi-label">Max DD</div><div class="kpi-value red" id="maxdd">0%</div></div>
                 <div class="kpi-card"><div class="kpi-label">Avg Gain</div><div class="kpi-value green" id="avggain">$0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-value" style="color: #fbbf24;" id="sharpe">0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Expectancy</div><div class="kpi-value" style="color: #34d399;" id="expectancy">$0</div></div>
             </div>
         </div>
 
@@ -141,7 +143,7 @@
             <div id="form" class="section hidden">
                 <h3 style="margin-bottom: 16px;">Nouveau Trade</h3>
                 <input type="date" id="date" class="form-input">
-                <select id="asset" class="form-input"><option>NAS100</option><option>DAX40</option><option>GOLD</option></select>
+                <select id="asset" class="form-input"><option>NAS100</option><option>DAX40</option><option>GOLD</option><option>DJ30</option><option>EURUSD</option><option>SP500</option></select>
                 <select id="direction" class="form-input"><option>Long</option><option>Short</option></select>
                 <input type="number" id="entry" placeholder="Entrée" class="form-input" step="0.01">
                 <input type="number" id="sl" placeholder="SL" class="form-input" step="0.01">
@@ -167,14 +169,38 @@
                 <div class="section-title">P&L par Trade</div>
                 <div class="chart-container"><canvas id="balanceChart"></canvas></div>
             </div>
+        </div>
+
+        <!-- Trades Détaillés -->
+        <div class="content" id="tradesDetails"></div>
+
+        <!-- Détails / Statistiques Avancées -->
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Statistiques Avancées</div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-row"><span class="stat-label">Avg Gain</span><span class="green" id="detail-avggain">$0</span></div>
+                        <div class="stat-row"><span class="stat-label">Avg Loss</span><span class="red" id="detail-avgloss">$0</span></div>
+                        <div class="stat-row"><span class="stat-label">Ratio</span><span class="blue" id="detail-ratio">0</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-row"><span class="stat-label">Total</span><span class="cyan" id="detail-total">0</span></div>
+                        <div class="stat-row"><span class="stat-label">Wins</span><span class="green" id="detail-wins">0</span></div>
+                        <div class="stat-row"><span class="stat-label">Losses</span><span class="red" id="detail-losses">0</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-row"><span class="stat-label">Levier</span><span class="purple" id="detail-leverage">0x</span></div>
+                        <div class="stat-row"><span class="stat-label">R:R Moy</span><span class="blue" id="detail-rr">0</span></div>
+                        <div class="stat-row"><span class="stat-label">Volatilité</span><span style="color: #fbbf24;" id="detail-vol">$0</span></div>
+                    </div>
+                </div>
+            </div>
             <div class="section">
                 <div class="section-title">Performance par Actif</div>
                 <div class="stats-grid" id="assetStats"></div>
             </div>
         </div>
-
-        <!-- Trades Détaillés -->
-        <div class="content" id="tradesDetails"></div>
     </div>
 
     <div id="imageModal" class="modal" onclick="closeModal()">
@@ -182,9 +208,7 @@
             <span class="close-modal" onclick="closeModal()">&times;</span>
             <img id="modalImage" src="">
         </div>
-    </div>
-
-    <script>
+    </div><script>
         const API = '/api';
         let authMode = 'login';
         let userId = null;
@@ -372,159 +396,6 @@
             } catch (e) {
                 alert('Erreur: ' + e.message);
             }
-        }function updateUI() {
-            const account = accounts.find(a => a.id === currentAccount);
-            const totalPnL = trades.reduce((sum, t) => sum + parseFloat(t.resultUSD || 0), 0);
-            const wins = trades.filter(t => parseFloat(t.resultUSD) > 0).length;
-            const losses = trades.length - wins;
-            const perf = account ? ((totalPnL / account.capital) * 100).toFixed(2) : 0;
-            const winrate = trades.length > 0 ? ((wins / trades.length) * 100).toFixed(0) : 0;
-            const avgGain = wins > 0 ? (trades.filter(t => parseFloat(t.resultUSD) > 0).reduce((sum, t) => sum + parseFloat(t.resultUSD), 0) / wins).toFixed(2) : 0;
-            const avgLoss = losses > 0 ? (Math.abs(trades.filter(t => parseFloat(t.resultUSD) < 0).reduce((sum, t) => sum + parseFloat(t.resultUSD), 0)) / losses).toFixed(2) : 0;
-            const pf = avgLoss > 0 ? (avgGain / avgLoss).toFixed(2) : 0;
-
-            let runCap = account.capital, maxCap = account.capital, maxDD = 0;
-            trades.forEach(t => {
-                runCap += parseFloat(t.resultUSD || 0);
-                maxCap = Math.max(maxCap, runCap);
-                const dd = ((maxCap - runCap) / maxCap) * 100;
-                maxDD = Math.max(maxDD, dd);
-            });
-
-            document.getElementById('perf').textContent = perf + '%';
-            document.getElementById('capital').textContent = '$' + (account ? (account.capital + totalPnL).toFixed(0) : 0);
-            document.getElementById('winrate').textContent = winrate + '%';
-            document.getElementById('pf').textContent = pf;
-            document.getElementById('maxdd').textContent = maxDD.toFixed(2) + '%';
-            document.getElementById('avggain').textContent = '$' + avgGain;
-
-            updateTradesTable();
-            updateTradesCards();
-            updateCharts();
-            updateStats();
-        }
-
-        function updateTradesTable() {
-            const tbody = document.getElementById('tradesBody');
-            tbody.innerHTML = '';
-            if (trades.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Aucun trade</td></tr>';
-                return;
-            }
-            trades.slice().reverse().forEach(t => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${t.date}</td><td>${t.asset}</td><td><span class="badge ${t.direction === 'Long' ? 'badge-long' : 'badge-short'}">${t.direction[0]}</span></td><td>${t.entry}</td><td style="color: ${parseFloat(t.resultUSD) > 0 ? '#4ade80' : '#f87171'}">$${t.resultUSD}</td><td><button onclick="deleteTrade(${t.id})" class="btn-red">×</button></td>`;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateTradesCards() {
-            const container = document.getElementById('tradesDetails');
-            if (trades.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">Aucun trade</div>';
-                return;
-            }
-            let html = '';
-            trades.slice().reverse().forEach(t => {
-                const isWin = parseFloat(t.resultUSD) > 0;
-                let img = '';
-                if (t.screenshot) img = `<img class="trade-image" src="${t.screenshot}" onclick="openModal('${t.screenshot.replace(/'/g, "\\'")}')" style="cursor: pointer;">`;
-                html += `<div class="trade-card"><div class="trade-header"><div><strong>${t.asset}</strong></div><span class="badge ${t.direction === 'Long' ? 'badge-long' : 'badge-short'}">${t.direction}</span></div><div class="trade-meta"><div><span style="color: #94a3b8;">Entrée:</span> ${t.entry}</div><div><span style="color: #94a3b8;">SL:</span> ${t.sl}</div><div><span style="color: #94a3b8;">TP:</span> ${t.tp}</div><div><span style="color: #94a3b8;">Date:</span> ${t.date}</div></div><div class="trade-result ${isWin ? 'win' : 'loss'}">${isWin ? '✓ +' : '✗ '}$${t.resultUSD}</div><div style="color: #94a3b8; margin-top: 8px;">💬 ${t.comment || '-'}</div>${img}</div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function updateCharts() {
-            const account = accounts.find(a => a.id === currentAccount);
-            if (!account) return;
-
-            const labels = [];
-            const equityData = [];
-            const balanceData = [];
-            let running = account.capital;
-            trades.slice().sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
-                running += parseFloat(t.resultUSD || 0);
-                labels.push(t.date);
-                equityData.push(running);
-                balanceData.push(parseFloat(t.resultUSD || 0));
-            });
-
-            if (labels.length === 0) {
-                labels.push('Pas de données');
-                equityData.push(account.capital);
-                balanceData.push(0);
-            }
-
-            const ctx1 = document.getElementById('equityChart');
-            if (ctx1) {
-                if (equityChart) equityChart.destroy();
-                equityChart = new Chart(ctx1, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Capital',
-                            data: equityData,
-                            borderColor: '#06b6d4',
-                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
-                        scales: {
-                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-                        }
-                    }
-                });
-            }
-
-            const ctx2 = document.getElementById('balanceChart');
-            if (ctx2) {
-                if (balanceChart) balanceChart.destroy();
-                balanceChart = new Chart(ctx2, {type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'P&L',
-                            data: balanceData,
-                            backgroundColor: balanceData.map(v => v > 0 ? '#4ade80' : '#f87171'),
-                            borderColor: balanceData.map(v => v > 0 ? '#22c55e' : '#dc2626'),
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
-                        scales: {
-                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-                        }
-                    }
-                });
-            }
-        }
-
-        function updateStats() {
-            const byAsset = {};
-            trades.forEach(t => {
-                if (!byAsset[t.asset]) byAsset[t.asset] = { wins: 0, total: 0, pnl: 0 };
-                byAsset[t.asset].total++;
-                if (parseFloat(t.resultUSD) > 0) byAsset[t.asset].wins++;
-                byAsset[t.asset].pnl += parseFloat(t.resultUSD);
-            });
-            let html = '<div class="stats-grid">';
-            Object.entries(byAsset).forEach(([asset, stats]) => {
-                html += `<div class="stat-box"><div class="stat-row"><span class="stat-label">${asset}</span><span>${stats.total} trades</span></div><div class="stat-row"><span class="stat-label">WR</span><span class="cyan">${((stats.wins/stats.total)*100).toFixed(0)}%</span></div><div class="stat-row"><span class="stat-label">PnL</span><span style="color: ${stats.pnl > 0 ? '#4ade80' : '#f87171'}">${stats.pnl.toFixed(0)}</span></div></div>`;
-            });
-            html += '</div>';
-            document.getElementById('assetStats').innerHTML = html;
         }
 
         function toggleForm() {
