@@ -18,7 +18,7 @@
         .auth-box button { width: 100%; padding: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 12px; }
         .auth-box button:hover { background: #15803d; }
         .auth-toggle { color: #94a3b8; font-size: 14px; cursor: pointer; }
-        .auth-toggle a { color: #60a5fa; }
+        .auth-toggle a { color: #60a5fa; cursor: pointer; }
         h1 { font-size: 36px; font-weight: bold; margin-bottom: 4px; background: linear-gradient(90deg, #60a5fa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
         .header { border-bottom: 1px solid #334155; padding-bottom: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
@@ -47,9 +47,7 @@
         .blue { color: #60a5fa; }
         .cyan { color: #06b6d4; }
         .red { color: #f87171; }
-        .purple { color: #a78bfa; }
-        .form-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-        .form-input { background: #475569; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+        .form-input { background: #475569; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin-bottom: 12px; width: 100%; }
         .form-input:focus { outline: none; border-color: #3b82f6; }
         .hidden { display: none !important; }
         table { width: 100%; border-collapse: collapse; background: #334155; border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
@@ -63,25 +61,6 @@
         .section { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
         .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
         .chart-container { position: relative; height: 400px; margin-bottom: 30px; }
-        .account-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; margin-bottom: 16px; }
-        .trade-card { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-        .trade-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .trade-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; font-size: 13px; }
-        .trade-comment { background: #475569; padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 13px; }
-        .trade-result { padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-top: 8px; }
-        .trade-result.win { background: #166534; color: #86efac; }
-        .trade-result.loss { background: #7c2d12; color: #fed7aa; }
-        .trade-image { max-width: 100%; max-height: 300px; border-radius: 6px; margin-top: 12px; cursor: pointer; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { position: relative; max-width: 90%; max-height: 90%; }
-        .modal-content img { max-width: 100%; max-height: 90vh; }
-        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
-        .image-preview { max-width: 200px; max-height: 150px; margin-top: 8px; border-radius: 6px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
-        .stat-box { background: #475569; padding: 12px; border-radius: 6px; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .stat-label { color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -114,11 +93,9 @@
 
         <div id="accountManager" class="section hidden">
             <div class="section-title">Créer un compte</div>
-            <div class="account-form">
-                <input type="text" id="newAccountName" placeholder="Nom du compte" class="form-input">
-                <input type="number" id="newAccountCapital" placeholder="Capital initial" class="form-input" value="10000">
-                <button class="btn-green" onclick="createAccount()">Créer</button>
-            </div>
+            <input type="text" id="newAccountName" placeholder="Nom du compte" class="form-input">
+            <input type="number" id="newAccountCapital" placeholder="Capital initial" class="form-input" value="10000">
+            <button class="btn-green" onclick="createAccount()">Créer</button>
         </div>
 
         <div class="account-selector">
@@ -130,7 +107,6 @@
             <button class="tab active" onclick="switchTab(0)">📊 Dashboard</button>
             <button class="tab" onclick="switchTab(1)">📝 Journal</button>
             <button class="tab" onclick="switchTab(2)">📊 Stats</button>
-            <button class="tab" onclick="switchTab(3)">💬 Trades</button>
         </div>
 
         <!-- Dashboard -->
@@ -139,9 +115,7 @@
                 <div class="kpi-card"><div class="kpi-label">Performance</div><div class="kpi-value green" id="perf">0%</div></div>
                 <div class="kpi-card"><div class="kpi-label">Capital</div><div class="kpi-value blue" id="capital">$0</div></div>
                 <div class="kpi-card"><div class="kpi-label">Winrate</div><div class="kpi-value cyan" id="winrate">0%</div></div>
-                <div class="kpi-card"><div class="kpi-label">Profit Factor</div><div class="kpi-value purple" id="pf">0</div></div>
-                <div class="kpi-card"><div class="kpi-label">Max DD</div><div class="kpi-value red" id="maxdd">0%</div></div>
-                <div class="kpi-card"><div class="kpi-label">Avg Gain</div><div class="kpi-value green" id="avggain">$0</div></div>
+                <div class="kpi-card"><div class="kpi-label">Trades</div><div class="kpi-value" style="color: #a78bfa;" id="totalTrades">0</div></div>
             </div>
         </div>
 
@@ -150,27 +124,18 @@
             <button class="btn-green" style="margin-bottom: 16px;" onclick="toggleForm()">+ Ajouter Trade</button>
             <div id="form" class="section hidden">
                 <h3 style="margin-bottom: 16px;">Nouveau Trade</h3>
-                <div class="form-group">
-                    <input type="date" id="date" class="form-input">
-                    <select id="asset" class="form-input"><option>NAS100</option><option>DAX40</option><option>GOLD</option><option>SPX500</option><option>EUR/USD</option><option>DJ30</option></select>
-                    <select id="setup" class="form-input"><option>Delinvest Prime</option><option>Delinvest Zone</option></select>
-                    <select id="direction" class="form-input"><option>Long</option><option>Short</option></select>
-                    <input type="number" id="entry" placeholder="Entrée" class="form-input" step="0.01">
-                    <input type="number" id="sl" placeholder="SL" class="form-input" step="0.01">
-                    <input type="number" id="tp" placeholder="TP" class="form-input" step="0.01">
-                    <input type="number" id="result" placeholder="Résultat $" class="form-input" step="0.01">
-                    <input type="number" id="leverage" placeholder="Levier" class="form-input" value="1" step="0.1">
-                    <textarea id="comment" placeholder="Commentaire..." class="form-input" style="grid-column: 1 / -1; height: 60px;"></textarea>
-                </div>
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 8px;">Screenshot (optionnel)</label>
-                    <input type="file" id="screenshot" accept="image/*" class="form-input" onchange="previewScreenshot()">
-                    <img id="screenshotPreview" class="image-preview" style="display:none;">
-                </div>
+                <input type="date" id="date" class="form-input">
+                <select id="asset" class="form-input"><option>NAS100</option><option>DAX40</option><option>GOLD</option></select>
+                <select id="direction" class="form-input"><option>Long</option><option>Short</option></select>
+                <input type="number" id="entry" placeholder="Entrée" class="form-input" step="0.01">
+                <input type="number" id="sl" placeholder="SL" class="form-input" step="0.01">
+                <input type="number" id="tp" placeholder="TP" class="form-input" step="0.01">
+                <input type="number" id="result" placeholder="Résultat $" class="form-input" step="0.01">
+                <textarea id="comment" placeholder="Commentaire..." class="form-input" style="height: 60px;"></textarea>
                 <button class="btn-green" onclick="addTrade()" style="margin-right: 8px;">Ajouter</button>
                 <button class="btn-blue" onclick="toggleForm()">Annuler</button>
             </div>
-            <table><thead><tr><th>Date</th><th>Actif</th><th>Setup</th><th>Dir</th><th>Entrée</th><th>R:R</th><th>Résultat</th><th>Action</th></tr></thead><tbody id="tradesBody"></tbody></table>
+            <table><thead><tr><th>Date</th><th>Actif</th><th>Dir</th><th>Entrée</th><th>Résultat</th><th>Action</th></tr></thead><tbody id="tradesBody"></tbody></table>
         </div>
 
         <!-- Stats -->
@@ -179,20 +144,6 @@
                 <div class="section-title">Equity Curve</div>
                 <div class="chart-container"><canvas id="equityChart"></canvas></div>
             </div>
-            <div class="section">
-                <div class="section-title">P&L par Trade</div>
-                <div class="chart-container"><canvas id="balanceChart"></canvas></div>
-            </div>
-        </div>
-
-        <!-- Trades Détaillés -->
-        <div class="content" id="tradesDetails"></div>
-    </div>
-
-    <div id="imageModal" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <img id="modalImage" src="">
         </div>
     </div>
 
@@ -203,9 +154,7 @@
         let currentAccount = null;
         let accounts = [];
         let trades = [];
-        let currentScreenshot = null;
         let equityChart = null;
-        let balanceChart = null;
 
         function toggleAuthMode() {
             authMode = authMode === 'login' ? 'register' : 'login';
@@ -252,7 +201,7 @@
                 if (accounts.length > 0) switchAccount(accounts[0].id);
                 else createDefaultAccount();
             } catch (e) {
-                alert('Erreur: ' + e.message);
+                console.error(e);
             }
         }
 
@@ -268,7 +217,7 @@
                 updateAccountButtons();
                 switchAccount(acc.id);
             } catch (e) {
-                alert('Erreur: ' + e.message);
+                console.error(e);
             }
         }
 
@@ -319,32 +268,7 @@
                 const res = await fetch(`${API}/trades/${currentAccount}`);
                 trades = await res.json();
             } catch (e) {
-                alert('Erreur: ' + e.message);
-            }
-        }
-
-        function previewScreenshot() {
-            const file = document.getElementById('screenshot').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    currentScreenshot = e.target.result;
-                    document.getElementById('screenshotPreview').src = currentScreenshot;
-                    document.getElementById('screenshotPreview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function calculateRR(entry, sl, tp, dir) {
-            if (!entry || !sl || !tp) return 0;
-            const e = parseFloat(entry), s = parseFloat(sl), t = parseFloat(tp);
-            if (dir === 'Long') {
-                const risk = e - s, reward = t - e;
-                return risk > 0 ? (reward / risk).toFixed(2) : 0;
-            } else {
-                const risk = s - e, reward = e - t;
-                return risk > 0 ? (reward / risk).toFixed(2) : 0;
+                console.error(e);
             }
         }
 
@@ -363,16 +287,12 @@
                         account_id: currentAccount,
                         date: document.getElementById('date').value,
                         asset: document.getElementById('asset').value,
-                        setup: document.getElementById('setup').value,
                         direction: document.getElementById('direction').value,
                         entry: entry.toFixed(2),
                         sl: sl.toFixed(2),
                         tp: tp.toFixed(2),
-                        rr: calculateRR(entry, sl, tp, document.getElementById('direction').value),
                         resultUSD: result.toFixed(2),
-                        leverage: parseFloat(document.getElementById('leverage').value),
-                        comment: document.getElementById('comment').value,
-                        screenshot: currentScreenshot
+                        comment: document.getElementById('comment').value
                     })
                 });
                 document.getElementById('entry').value = '';
@@ -380,9 +300,6 @@
                 document.getElementById('tp').value = '';
                 document.getElementById('result').value = '';
                 document.getElementById('comment').value = '';
-                document.getElementById('screenshot').value = '';
-                document.getElementById('screenshotPreview').style.display = 'none';
-                currentScreenshot = null;
                 toggleForm();
                 await loadTrades();
                 updateUI();
@@ -392,7 +309,7 @@
         }
 
         async function deleteTrade(id) {
-            if (!confirm('Supprimer ce trade ?')) return;
+            if (!confirm('Supprimer ?')) return;
             try {
                 await fetch(`${API}/trades/${id}`, { method: 'DELETE' });
                 await loadTrades();
@@ -403,74 +320,127 @@
         }
 
         function updateUI() {
-            updateStats();
-            updateTradesTable();
-            updateTradesCards();
-            updateCharts();
-        }
-
-        function updateStats() {
             const account = accounts.find(a => a.id === currentAccount);
             const totalPnL = trades.reduce((sum, t) => sum + parseFloat(t.resultUSD || 0), 0);
             const wins = trades.filter(t => parseFloat(t.resultUSD) > 0).length;
-            const losses = trades.length - wins;
             const perf = account ? ((totalPnL / account.capital) * 100).toFixed(2) : 0;
             const winrate = trades.length > 0 ? ((wins / trades.length) * 100).toFixed(0) : 0;
-            const avgGain = wins > 0 ? (trades.filter(t => parseFloat(t.resultUSD) > 0).reduce((sum, t) => sum + parseFloat(t.resultUSD), 0) / wins).toFixed(2) : 0;
-            const avgLoss = losses > 0 ? (Math.abs(trades.filter(t => parseFloat(t.resultUSD) < 0).reduce((sum, t) => sum + parseFloat(t.resultUSD), 0)) / losses).toFixed(2) : 0;
-            const pf = avgLoss > 0 ? (avgGain / avgLoss).toFixed(2) : 0;
-
-            let runCap = account.capital, maxCap = account.capital, maxDD = 0;
-            trades.forEach(t => {
-                runCap += parseFloat(t.resultUSD || 0);
-                maxCap = Math.max(maxCap, runCap);
-                const dd = ((maxCap - runCap) / maxCap) * 100;
-                maxDD = Math.max(maxDD, dd);
-            });
 
             document.getElementById('perf').textContent = perf + '%';
-            document.getElementById('capital').textContent = '$' + (account.capital + totalPnL).toFixed(0);
+            document.getElementById('capital').textContent = '$' + (account ? (account.capital + totalPnL).toFixed(0) : 0);
             document.getElementById('winrate').textContent = winrate + '%';
-            document.getElementById('pf').textContent = pf;
-            document.getElementById('maxdd').textContent = maxDD.toFixed(2) + '%';
-            document.getElementById('avggain').textContent = '$' + avgGain;
+            document.getElementById('totalTrades').textContent = trades.length;
+
+            updateTradesTable();
+            updateChart();
         }
 
         function updateTradesTable() {
             const tbody = document.getElementById('tradesBody');
             tbody.innerHTML = '';
             if (trades.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8;">Aucun trade</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8;">Aucun trade</td></tr>';
                 return;
             }
             trades.slice().reverse().forEach(t => {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${t.date}</td><td>${t.asset}</td><td>${t.setup}</td><td><span class="badge ${t.direction === 'Long' ? 'badge-long' : 'badge-short'}">${t.direction[0]}</span></td><td>${t.entry}</td><td style="color: #60a5fa;">${t.rr}</td><td style="color: ${parseFloat(t.resultUSD) > 0 ? '#4ade80' : '#f87171'}">$${t.resultUSD}</td><td><button onclick="deleteTrade(${t.id})" class="btn-red">×</button></td>`;
+                row.innerHTML = `<td>${t.date}</td><td>${t.asset}</td><td><span class="badge ${t.direction === 'Long' ? 'badge-long' : 'badge-short'}">${t.direction[0]}</span></td><td>${t.entry}</td><td style="color: ${parseFloat(t.resultUSD) > 0 ? '#4ade80' : '#f87171'}">$${t.resultUSD}</td><td><button onclick="deleteTrade(${t.id})" class="btn-red">×</button></td>`;
                 tbody.appendChild(row);
             });
         }
 
-        function updateTradesCards() {
-            const container = document.getElementById('tradesDetails');
-            if (trades.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">Aucun trade</div>';
-                return;
-            }
-            let html = '';
-            trades.slice().reverse().forEach(t => {
-                const isWin = parseFloat(t.resultUSD) > 0;
-                let img = '';
-                if (t.screenshot) img = `<img class="trade-image" src="${t.screenshot}" onclick="openModal('${t.screenshot}')">`;
-                html += `<div class="trade-card"><div class="trade-header"><div><strong>${t.asset}</strong> • ${t.setup}</div><span class="badge ${t.direction === 'Long' ? 'badge-long' : 'badge-short'}">${t.direction}</span></div><div class="trade-meta"><div><span style="color: #94a3b8;">Entrée:</span> ${t.entry}</div><div><span style="color: #94a3b8;">SL:</span> ${t.sl}</div><div><span style="color: #94a3b8;">TP:</span> ${t.tp}</div><div><span style="color: #94a3b8;">R:R:</span> <span style="color: #60a5fa;">${t.rr}</span></div></div><div class="trade-result ${isWin ? 'win' : 'loss'}">${isWin ? '✓ +' : '✗ '}$${t.resultUSD}</div><div class="trade-comment">💬 ${t.comment || '-'}</div>${img}</div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function updateCharts() {
+        function updateChart() {
             const account = accounts.find(a => a.id === currentAccount);
             if (!account) return;
 
             const labels = [];
             const equityData = [];
-            const balanceData = [];
             let running = account.capital;
+            trades.slice().sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                running += parseFloat(t.resultUSD || 0);
+                labels.push(t.date);
+                equityData.push(running);
+            });
+
+            if (labels.length === 0) {
+                labels.push('Pas de données');
+                equityData.push(account.capital);
+            }
+
+            const ctx = document.getElementById('equityChart');
+            if (ctx) {
+                if (equityChart) equityChart.destroy();
+                equityChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Capital',
+                            data: equityData,
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function toggleForm() {
+            document.getElementById('form').classList.toggle('hidden');
+            if (!document.getElementById('form').classList.contains('hidden')) {
+                document.getElementById('date').valueAsDate = new Date();
+            }
+        }
+
+        function toggleAccountManager() {
+            document.getElementById('accountManager').classList.toggle('hidden');
+        }
+
+        function switchTab(idx) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.content')[idx].classList.add('active');
+            document.querySelectorAll('.tab')[idx].classList.add('active');
+        }
+
+        function showApp() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+        }
+
+        function logout() {
+            if (confirm('Déconnexion ?')) {
+                userId = null;
+                currentAccount = null;
+                localStorage.removeItem('userId');
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('authUsername').value = '';
+                document.getElementById('authPassword').value = '';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('userId');
+            if (saved) {
+                userId = saved;
+                showApp();
+                loadAccounts();
+            }
+        });
+    </script>
+</body>
+</html>
+
